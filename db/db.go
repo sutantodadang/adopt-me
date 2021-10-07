@@ -8,11 +8,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-func GetClient() *mongo.Client  {
+func GetClient(env string) *mongo.Client  {
 	
 
 	clientOptions := options.Client().
-    ApplyURI("mongodb+srv://admin:admin@adopt-me.ixrkk.mongodb.net/adopt-me?retryWrites=true&w=majority")
+    ApplyURI(env)
 ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer cancel()
 client, err := mongo.Connect(ctx, clientOptions)
