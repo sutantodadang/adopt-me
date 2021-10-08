@@ -1,22 +1,45 @@
 package handler
 
 import (
-	"context"
-
+	"github.com/gofiber/fiber/v2"
 	"github.com/sutantodadang/adopt-me/v1/models"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/sutantodadang/adopt-me/v1/services"
 )
 
 
-func CreateUser( db *mongo.Client, data models.User) (*mongo.InsertOneResult, error) {
-	dataBase := db.Database("adopt-me-api").Collection("users")
+type userHandler struct {
+	userService services.ServiceUser
+}
 
-	res, err := dataBase.InsertOne(context.Background(), data)
+func NewUserHandler(userService services.ServiceUser) *userHandler {
+	return &userHandler{userService}
+}
 
+func (h *userHandler) CreateUserHandler(c *fiber.Ctx) error {
+	name := c.FormValue("name")
+	gender := c.FormValue("gender")
+	place := c.FormValue("place")
+	email := c.FormValue("email")
+	avatar := c.FormValue("avatar")
+	phone := c.FormValue("phone")
+	password := c.FormValue("password")
+
+	var user models.User
+
+	user.Name = name
+	user.Gender = gender
+	user.Place = place
+	user.Avatar = avatar
+	user.Email = email
+	user.Phone = phone
+	user.Password = password
+
+	// kurang bcrypt
+	
+	err := h.userService.CreateUser(user)
 	if err != nil {
-		return nil ,err
+		c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{"message":err.Error()})
 	}
 
-
-	return res, nil
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"message":"successfully created"})
 }

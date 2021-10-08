@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sutantodadang/adopt-me/v1/db"
 	"github.com/sutantodadang/adopt-me/v1/handler"
-	"github.com/sutantodadang/adopt-me/v1/models"
+	"github.com/sutantodadang/adopt-me/v1/services"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
@@ -35,34 +35,14 @@ func main()  {
 		fmt.Println("Success to connect")
 	}
 
+	userService := services.NewService(Database)
+
+	userHandler := handler.NewUserHandler(userService)
+
+
 	route := app.Group("/api/v1")
 
-	route.Post("/user",func(c *fiber.Ctx) error {
-		name := c.FormValue("name")
-		gender := c.FormValue("gender")
-		place := c.FormValue("place")
-		email := c.FormValue("email")
-		avatar := c.FormValue("avatar")
-		phone := c.FormValue("phone")
-		password := c.FormValue("password")
-
-		var user models.User
-
-		user.Name = name
-		user.Gender = gender
-		user.Place = place
-		user.Avatar = avatar
-		user.Email = email
-		user.Phone = phone
-		user.Password = password
-		
-		res,err := handler.CreateUser(Database, user)
-		if err != nil {
-			c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{"message":err.Error()})
-		}
-
-		return c.Status(fiber.StatusCreated).JSON(res)
-	})
+	route.Post("/user",userHandler.CreateUserHandler)
 
 	app.Listen(":5000")
 
