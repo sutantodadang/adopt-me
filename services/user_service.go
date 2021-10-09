@@ -4,24 +4,25 @@ import (
 	"context"
 
 	"github.com/sutantodadang/adopt-me/v1/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-
 type ServiceUser interface {
 	CreateUser(data models.User) error
+	LoginUser(email string) (models.User, error)
 }
 
 type service struct {
 	db *mongo.Client
 }
 
-func NewService(db *mongo.Client) *service  {
+func NewService(db *mongo.Client) *service {
 	return &service{db}
 }
 
-func (s *service) CreateUser( data models.User) error {
-	
+func (s *service) CreateUser(data models.User) error {
+
 	dataBase := s.db.Database("adopt-me-api").Collection("users")
 
 	_, err := dataBase.InsertOne(context.Background(), data)
@@ -30,6 +31,19 @@ func (s *service) CreateUser( data models.User) error {
 		return err
 	}
 
+	return nil
+}
 
-	return  nil
+func (s *service) LoginUser(email string) (models.User, error) {
+	dataBase := s.db.Database("adopt-me-api").Collection("users")
+
+	var result models.User
+
+	err := dataBase.FindOne(context.Background(), bson.M{"email": email}).Decode(&result)
+
+	if err != nil {
+		return result, mongo.ErrNoDocuments
+	}
+
+	return result, nil
 }

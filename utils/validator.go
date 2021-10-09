@@ -2,7 +2,7 @@ package utils
 
 import "github.com/go-playground/validator/v10"
 
-func ValidateInput(input interface{}) error  {
+func ValidateInput(input interface{}) error {
 	validate := validator.New()
 
 	err := validate.Struct(input)
@@ -11,5 +11,5 @@ func ValidateInput(input interface{}) error  {
 		return err
 	}
 
-	return err
+	return nil
 }

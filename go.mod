@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/gofiber/fiber/v2 v2.20.0 // indirect
+	github.com/gofiber/fiber/v2 v2.20.1 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.0 // indirect
