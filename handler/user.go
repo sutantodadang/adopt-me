@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/sutantodadang/adopt-me/v1/models"
@@ -11,10 +13,11 @@ import (
 
 type UserHandler struct {
 	userService services.ServiceUser
+	jwtService  utils.JwtToken
 }
 
-func NewUserHandler(userService services.ServiceUser) *UserHandler {
-	return &UserHandler{userService}
+func NewUserHandler(userService services.ServiceUser, jwt utils.JwtToken) *UserHandler {
+	return &UserHandler{userService, jwt}
 }
 
 func (h *UserHandler) CreateUserHandler(c *fiber.Ctx) error {
@@ -39,6 +42,8 @@ func (h *UserHandler) CreateUserHandler(c *fiber.Ctx) error {
 	}
 
 	user.Password = string(hash)
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 
 	err = h.userService.CreateUser(*user)
 	if err != nil {
@@ -71,6 +76,12 @@ func (h *UserHandler) LoginUserHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "incorrect password, try again"})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success", "data": res})
+	token, err := h.jwtService.GenerateToken(res)
+
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success", "token": token})
 
 }
