@@ -52,7 +52,7 @@ func main() {
 	})
 
 	if port == "" {
-		port = "5050"
+		port = "27017"
 	}
 
 	app.Listen(":" + port)
