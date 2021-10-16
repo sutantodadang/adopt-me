@@ -15,9 +15,6 @@ import (
 )
 
 func main() {
-	app := fiber.New()
-	app.Use(logger.New())
-	app.Use(cors.New())
 
 	// di aktifkan kalau berjalan di lokal
 	// err := godotenv.Load()
@@ -27,6 +24,12 @@ func main() {
 
 	key := os.Getenv("MONGO_URI")
 	secret := os.Getenv("SECRET_KEY")
+	port := os.Getenv("PORT")
+	status := os.Getenv("STATUS")
+
+	app := fiber.New()
+	app.Use(logger.New())
+	app.Use(cors.New())
 
 	Database := db.GetClient(key)
 
@@ -49,6 +52,10 @@ func main() {
 		return c.SendString("Welcome To Adopt Me Api")
 	})
 
-	app.Listen(":5050")
+	if status == "development" {
+		app.Listen(":5050")
+	}
+
+	app.Listen(":" + port)
 
 }
