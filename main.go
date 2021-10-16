@@ -46,6 +46,10 @@ func main() {
 
 	userRoute.UserRouter(route)
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Welcome To Adopt Me Api")
+	})
+
 	app.Listen(":5000")
 
 }
