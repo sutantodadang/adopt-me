@@ -3,7 +3,7 @@ package utils
 import (
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/sutantodadang/adopt-me/v1/models"
 )
 
@@ -26,7 +26,7 @@ func (j *jwtService) GenerateToken(input models.User) (string, error) {
 		"name":  input.Name,
 		"place": input.Place,
 		"phone": input.Phone,
-		"exp":   time.Now().Add(time.Hour * 24),
+		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

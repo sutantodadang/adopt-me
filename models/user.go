@@ -7,13 +7,13 @@ import (
 )
 
 type User struct {
-	Id        primitive.ObjectID `json:"id" bson:"_id"`
+	Id        primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Name      string             `json:"name" validate:"required" bson:"name"`
 	Gender    string             `json:"gender" validate:"required" bson:"gender"`
 	Place     string             `json:"place" validate:"required" bson:"place"`
-	Email     string             `json:"email" validate:"required,email" bson:"email"`
+	Email     string             `json:"email" validate:"required,email,unique" bson:"email"`
 	Avatar    string             `json:"avatar" bson:"avatar"`
-	Phone     string             `json:"phone" validate:"required" bson:"phone"`
+	Phone     string             `json:"phone" validate:"required,unique" bson:"phone"`
 	Password  string             `json:"password" validate:"required" bson:"password"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`

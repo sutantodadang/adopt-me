@@ -13,19 +13,19 @@ type ServiceUser interface {
 	LoginUser(email string) (models.User, error)
 }
 
-type service struct {
+type serviceUser struct {
 	db *mongo.Client
 }
 
-func NewService(db *mongo.Client) *service {
-	return &service{db}
+func NewServiceUser(db *mongo.Client) *serviceUser {
+	return &serviceUser{db}
 }
 
-func (s *service) CreateUser(data models.User) error {
+func (s *serviceUser) CreateUser(data models.User) error {
 
 	dataBase := s.db.Database("adopt-me-api").Collection("users")
 
-	_, err := dataBase.InsertOne(context.Background(), data)
+	_, err := dataBase.InsertOne(context.Background(), &data)
 
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (s *service) CreateUser(data models.User) error {
 	return nil
 }
 
-func (s *service) LoginUser(email string) (models.User, error) {
+func (s *serviceUser) LoginUser(email string) (models.User, error) {
 	dataBase := s.db.Database("adopt-me-api").Collection("users")
 
 	var result models.User

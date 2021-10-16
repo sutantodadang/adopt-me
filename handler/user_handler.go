@@ -30,7 +30,7 @@ func (h *UserHandler) CreateUserHandler(c *fiber.Ctx) error {
 	}
 
 	// validasi input
-	if err := utils.ValidateInput(*user); err != nil {
+	if err := utils.ValidateInput(user); err != nil {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{"message": err.Error()})
 	}
 

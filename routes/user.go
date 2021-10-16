@@ -15,8 +15,10 @@ func NewUserRoute(userHandler *handler.UserHandler, authMiddle middleware.Middle
 	return &userRoute{*userHandler, authMiddle}
 }
 
-func (u *userRoute) UserRouter(route fiber.Router) {
-	route.Post("/user", u.userHandler.CreateUserHandler)
-	route.Post("/user/login", u.userHandler.LoginUserHandler)
+func (u *userRoute) UserRouter(app *fiber.App) {
+	route := app.Group("/api/v1/user")
+
+	route.Post("/", u.userHandler.CreateUserHandler)
+	route.Post("/login", u.userHandler.LoginUserHandler)
 
 }

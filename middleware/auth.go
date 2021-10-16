@@ -20,9 +20,15 @@ func NewAuthMiddleware(secret string) *middlewareService {
 func (m *middlewareService) AuthMiddle() func(*fiber.Ctx) error {
 
 	return jwtware.New(jwtware.Config{
+		// SuccessHandler: func(c *fiber.Ctx) error {
+		// 	return c.Next()
+		// },
 		SigningKey: []byte(m.secret),
 		ErrorHandler: func(c *fiber.Ctx, e error) error {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unathorized"})
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": e.Error()})
+
 		},
+		AuthScheme:  "Bearer",
+		TokenLookup: "header:Authorization",
 	})
 }

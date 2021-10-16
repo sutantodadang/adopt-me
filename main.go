@@ -33,19 +33,22 @@ func main() {
 	Database := db.GetClient(key)
 
 	// memanggil service
-	userService := services.NewService(Database)
+	userService := services.NewServiceUser(Database)
+	catService := services.NewServiceCat(Database)
 	jwtService := utils.NewJwt(secret)
 	middleService := middleware.NewAuthMiddleware(secret)
 
 	// memanggil handler
 	userHandler := handler.NewUserHandler(userService, jwtService)
+	catHandler := handler.NewCatHandler(catService)
 
 	// memanggil route
 	userRoute := routes.NewUserRoute(userHandler, middleService)
+	catRoute := routes.NewCatRoute(catHandler, middleService)
 
-	route := app.Group("/api/v1")
-
-	userRoute.UserRouter(route)
+	// set route
+	userRoute.UserRouter(app)
+	catRoute.CatRouter(app)
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Welcome To Adopt Me Api")
