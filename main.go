@@ -25,7 +25,6 @@ func main() {
 	key := os.Getenv("MONGO_URI")
 	secret := os.Getenv("SECRET_KEY")
 	port := os.Getenv("PORT")
-	status := os.Getenv("STATUS")
 
 	app := fiber.New()
 	app.Use(logger.New())
@@ -52,8 +51,8 @@ func main() {
 		return c.SendString("Welcome To Adopt Me Api")
 	})
 
-	if status == "development" {
-		app.Listen(":5050")
+	if port == "" {
+		port = "5050"
 	}
 
 	app.Listen(":" + port)

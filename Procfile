@@ -1,1 +1,1 @@
-web: api-adopt-me
+web: bin/api-adopt-me
