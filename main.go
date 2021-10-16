@@ -50,6 +50,6 @@ func main() {
 		return c.SendString("Welcome To Adopt Me Api")
 	})
 
-	app.Listen(":5000")
+	app.Listen("")
 
 }
