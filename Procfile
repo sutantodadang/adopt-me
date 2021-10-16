@@ -1,1 +1,1 @@
-web : api-adopt-me
+web: api-adopt-me
