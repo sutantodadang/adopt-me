@@ -19,5 +19,6 @@ func (u *catRoute) CatRouter(app *fiber.App) {
 	route := app.Group("/api/v1/cat")
 
 	route.Post("/", u.authMiddle.AuthMiddle(), u.catHandler.CreateCatHandler)
-	route.Get("/", u.authMiddle.AuthMiddle(), u.catHandler.FindAllCatHandler)
+	route.Get("/user", u.authMiddle.AuthMiddle(), u.catHandler.FindAllCatHandler)
+	route.Get("/", u.authMiddle.AuthMiddle(), u.catHandler.FindCatHandler)
 }

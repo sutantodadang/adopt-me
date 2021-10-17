@@ -5,13 +5,15 @@ import (
 
 	"github.com/sutantodadang/adopt-me/v1/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ServiceCat interface {
 	CreateCat(input models.Cat) error
-	FindCatById(id string) ([]models.Cat, error)
+	FindCatByUserId(id string) ([]models.Cat, error)
+	FindCatById(id primitive.ObjectID) (models.Cat, error)
 }
 
 type serviceCat struct {
@@ -34,7 +36,7 @@ func (s *serviceCat) CreateCat(input models.Cat) error {
 	return nil
 }
 
-func (s *serviceCat) FindCatById(id string) ([]models.Cat, error) {
+func (s *serviceCat) FindCatByUserId(id string) ([]models.Cat, error) {
 	db := s.db.Database("adopt-me-api").Collection("cats")
 
 	var result []models.Cat
@@ -56,6 +58,20 @@ func (s *serviceCat) FindCatById(id string) ([]models.Cat, error) {
 
 	if result == nil {
 		return nil, mongo.ErrNoDocuments
+	}
+
+	return result, nil
+}
+
+func (s *serviceCat) FindCatById(id primitive.ObjectID) (models.Cat, error) {
+	db := s.db.Database("adopt-me-api").Collection("cats")
+
+	var result models.Cat
+
+	err := db.FindOne(context.Background(), bson.M{"_id": id}).Decode(&result)
+
+	if err != nil {
+		return result, err
 	}
 
 	return result, nil

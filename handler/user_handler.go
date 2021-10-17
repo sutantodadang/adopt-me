@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	"github.com/sutantodadang/adopt-me/v1/helpers"
 	"github.com/sutantodadang/adopt-me/v1/models"
 	"github.com/sutantodadang/adopt-me/v1/services"
 	"github.com/sutantodadang/adopt-me/v1/utils"
@@ -82,6 +83,8 @@ func (h *UserHandler) LoginUserHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success", "token": token})
+	response := helpers.ResponseApi("success", fiber.Map{"token": token})
+
+	return c.Status(fiber.StatusOK).JSON(response)
 
 }

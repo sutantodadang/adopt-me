@@ -5,9 +5,11 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/sutantodadang/adopt-me/v1/helpers"
 	"github.com/sutantodadang/adopt-me/v1/models"
 	"github.com/sutantodadang/adopt-me/v1/services"
 	"github.com/sutantodadang/adopt-me/v1/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CatHandler struct {
@@ -61,7 +63,7 @@ func (h *CatHandler) FindAllCatHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	res, err := h.catService.FindCatById(query)
+	res, err := h.catService.FindCatByUserId(query)
 
 	if err != nil {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
@@ -69,9 +71,38 @@ func (h *CatHandler) FindAllCatHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "retrieve data successfully",
-		"data":    res,
-	})
+	response := helpers.ResponseApi("retrieve data successfully", res)
 
+	return c.Status(fiber.StatusOK).JSON(response)
+
+}
+
+func (h *CatHandler) FindCatHandler(c *fiber.Ctx) error {
+	id := c.Query("id")
+
+	if id == "" {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	primId, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	result, err := h.catService.FindCatById(primId)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	response := helpers.ResponseApi("success retrieve data", result)
+
+	return c.Status(fiber.StatusOK).JSON(response)
 }
