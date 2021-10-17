@@ -1,11 +1,13 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/joho/godotenv"
 	"github.com/sutantodadang/adopt-me/v1/db"
 	"github.com/sutantodadang/adopt-me/v1/handler"
 	"github.com/sutantodadang/adopt-me/v1/middleware"
@@ -17,10 +19,10 @@ import (
 func main() {
 
 	// di aktifkan kalau berjalan di lokal
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	log.Fatal("Failed load env", err.Error())
-	// }
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Failed load env", err.Error())
+	}
 
 	key := os.Getenv("MONGO_URI")
 	secret := os.Getenv("SECRET_KEY")

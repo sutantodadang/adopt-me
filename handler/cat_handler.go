@@ -51,3 +51,27 @@ func (h *CatHandler) CreateCatHandler(c *fiber.Ctx) error {
 		"message": "successfully created",
 	})
 }
+
+func (h *CatHandler) FindAllCatHandler(c *fiber.Ctx) error {
+	query := c.Query("user_id")
+
+	if query == "" {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	res, err := h.catService.FindCatById(query)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "retrieve data successfully",
+		"data":    res,
+	})
+
+}
