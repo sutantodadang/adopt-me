@@ -14,6 +14,7 @@ type ServiceCat interface {
 	CreateCat(input models.Cat) error
 	FindCatByUserId(id string) ([]models.Cat, error)
 	FindCatById(id primitive.ObjectID) (models.Cat, error)
+	FindAllCat(limit int) ([]models.Cat, error)
 }
 
 type serviceCat struct {
@@ -72,6 +73,32 @@ func (s *serviceCat) FindCatById(id primitive.ObjectID) (models.Cat, error) {
 
 	if err != nil {
 		return result, err
+	}
+
+	return result, nil
+}
+
+func (s *serviceCat) FindAllCat(limit int) ([]models.Cat, error) {
+	db := s.db.Database("adopt-me-api").Collection("cats")
+
+	var result []models.Cat
+
+	findOption := options.Find()
+	findOption.SetLimit(int64(limit))
+
+	res, err := db.Find(context.Background(), bson.D{}, findOption)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = res.All(context.Background(), &result)
+	if err != nil {
+		return nil, err
+	}
+
+	if result == nil {
+		return nil, mongo.ErrNoDocuments
 	}
 
 	return result, nil

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -54,7 +55,7 @@ func (h *CatHandler) CreateCatHandler(c *fiber.Ctx) error {
 	})
 }
 
-func (h *CatHandler) FindAllCatHandler(c *fiber.Ctx) error {
+func (h *CatHandler) FindAllCatByUserIdHandler(c *fiber.Ctx) error {
 	query := c.Query("user_id")
 
 	if query == "" {
@@ -95,6 +96,36 @@ func (h *CatHandler) FindCatHandler(c *fiber.Ctx) error {
 	}
 
 	result, err := h.catService.FindCatById(primId)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	response := helpers.ResponseApi("success retrieve data", result)
+
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func (h *CatHandler) FindAllCat(c *fiber.Ctx) error {
+	limit := c.Query("limit")
+
+	if limit == "" {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	newLimit, err := strconv.Atoi(limit)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	result, err := h.catService.FindAllCat(newLimit)
 
 	if err != nil {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
