@@ -11,8 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-func GetClient(env string) *mongo.Client  {
-	
+func GetClient(env string) *mongo.Client {
 
 	clientOptions := options.Client().ApplyURI(env)
 
@@ -33,6 +32,6 @@ func GetClient(env string) *mongo.Client  {
 		fmt.Println("Success to connect")
 	}
 
-return client
+	return client
 
 }

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/sutantodadang/adopt-me/v1/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,6 +16,8 @@ type ServiceCat interface {
 	FindCatByUserId(id string) ([]models.Cat, error)
 	FindCatById(id primitive.ObjectID) (models.Cat, error)
 	FindAllCat(limit int) ([]models.Cat, error)
+	UpdateCat(id primitive.ObjectID, input models.Cat) (string, error)
+	DeleteCat(id primitive.ObjectID) (string, error)
 }
 
 type serviceCat struct {
@@ -102,4 +105,45 @@ func (s *serviceCat) FindAllCat(limit int) ([]models.Cat, error) {
 	}
 
 	return result, nil
+}
+
+func (s *serviceCat) UpdateCat(id primitive.ObjectID, input models.Cat) (string, error) {
+	db := s.db.Database("adopt-me-api").Collection("cats")
+
+	res, err := db.UpdateOne(context.Background(), bson.M{"_id": id}, bson.M{"$set": input})
+
+	if err != nil {
+		return "", err
+	}
+
+	count := res.ModifiedCount
+
+	str := strconv.Itoa(int(count))
+
+	if str == "" {
+		return "", mongo.ErrNoDocuments
+	}
+
+	return str, nil
+
+}
+
+func (s *serviceCat) DeleteCat(id primitive.ObjectID) (string, error) {
+	db := s.db.Database("adopt-me-api").Collection("cats")
+
+	res, err := db.DeleteOne(context.Background(), bson.M{"_id": id})
+
+	if err != nil {
+		return "", err
+	}
+
+	count := int(res.DeletedCount)
+
+	str := strconv.Itoa(count)
+
+	if str == "" {
+		return "", mongo.ErrNoDocuments
+	}
+
+	return str, nil
 }

@@ -137,3 +137,87 @@ func (h *CatHandler) FindAllCat(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response)
 }
+
+func (h *CatHandler) UpdateCatHandler(c *fiber.Ctx) error {
+	id := c.Query("id")
+
+	if id == "" {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	primId, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	res, err := h.catService.FindCatById(primId)
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	cat := new(models.Cat)
+
+	if err := c.BodyParser(cat); err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	res.Description = cat.Description
+	res.Gender = cat.Gender
+	res.Height = cat.Height
+	res.Weight = cat.Weight
+	res.Medical = cat.Medical
+	res.Name = cat.Name
+	res.Ras = cat.Ras
+	res.UpdatedAt = time.Now()
+
+	result, err := h.catService.UpdateCat(primId, res)
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	response := helpers.ResponseApi("update data success", result+" data updated")
+
+	return c.Status(fiber.StatusOK).JSON(response)
+
+}
+
+func (h *CatHandler) DeleteCatHandler(c *fiber.Ctx) error {
+	id := c.Query("id")
+
+	if id == "" {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": "fill the query",
+		})
+	}
+
+	primId, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	res, err := h.catService.DeleteCat(primId)
+
+	if err != nil {
+		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	response := helpers.ResponseApi("success delete data", res+" data deleted")
+
+	return c.Status(fiber.StatusOK).JSON(response)
+}
