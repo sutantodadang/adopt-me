@@ -85,7 +85,7 @@ using command go build -o bin/api-adopt-me -v
 
 - [@sutantodadang](https://github.com/sutantodadang) - Idea & Initial work
 
-See also the list of [contributors](https://github.com/sutantodadang/adopt-me-api/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/sutantodadang/adopt-me/contributors) who participated in this project.
 
 ## 🎉 Acknowledgements <a name = "acknowledgement"></a>
 
