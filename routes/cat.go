@@ -21,7 +21,7 @@ func (u *catRoute) CatRouter(app *fiber.App) {
 	route.Post("/", u.authMiddle.AuthMiddle(), u.catHandler.CreateCatHandler)
 	route.Get("/user", u.authMiddle.AuthMiddle(), u.catHandler.FindAllCatByUserIdHandler)
 	route.Get("/id", u.authMiddle.AuthMiddle(), u.catHandler.FindCatHandler)
-	route.Get("/", u.authMiddle.AuthMiddle(), u.catHandler.FindAllCat)
+	route.Get("/", u.catHandler.FindAllCat)
 	route.Put("/", u.authMiddle.AuthMiddle(), u.catHandler.UpdateCatHandler)
 	route.Delete("/", u.authMiddle.AuthMiddle(), u.catHandler.DeleteCatHandler)
 }
