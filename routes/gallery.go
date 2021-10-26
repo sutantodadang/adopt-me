@@ -19,4 +19,8 @@ func (r *galleryRoute) GalleryRouter(app *fiber.App) {
 	route := app.Group("/api/v1/gallery")
 
 	route.Post("/", r.authMiddle.AuthMiddle(), r.galleryHandler.CreateGalleryHandler)
+	route.Get("/", r.galleryHandler.GetAllGalleryHandler)
+
+	route.Get("/user", r.authMiddle.AuthMiddle(), r.galleryHandler.GetGalleryByUserHandler)
+	route.Get("/cat", r.authMiddle.AuthMiddle(), r.galleryHandler.GetGalleryByCatHandler)
 }

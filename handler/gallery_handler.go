@@ -8,11 +8,13 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/sutantodadang/adopt-me/v1/helpers"
 	"github.com/sutantodadang/adopt-me/v1/models"
 	"github.com/sutantodadang/adopt-me/v1/services"
 )
@@ -49,6 +51,14 @@ func (h *GalleryHandler) CreateGalleryHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
+		})
+	}
+
+	galCat, _ := h.gallery.FindGalleryByCatId(modCat.Id.Hex())
+
+	if galCat.Cat_Id != "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "already have gallery",
 		})
 	}
 
@@ -153,4 +163,91 @@ func (h *GalleryHandler) CreateGalleryHandler(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "success upload image",
 	})
+}
+
+func (h *GalleryHandler) GetGalleryByUserHandler(c *fiber.Ctx) error {
+	limit := c.Query("limit")
+
+	if limit == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	newLimit, err := strconv.Atoi(limit)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	user := c.Locals("user").(*jwt.Token)
+	claim := user.Claims.(jwt.MapClaims)
+	user_id := claim["id"].(string)
+
+	res, err := h.gallery.FindGalleryByUserId(user_id, newLimit)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	response := helpers.ResponseApi("success retrieve data", res)
+
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func (h *GalleryHandler) GetGalleryByCatHandler(c *fiber.Ctx) error {
+	id := c.Query("cat_id")
+
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	res, err := h.gallery.FindGalleryByCatId(id)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	response := helpers.ResponseApi("success retrieve data", res)
+
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func (h *GalleryHandler) GetAllGalleryHandler(c *fiber.Ctx) error {
+	limit := c.Query("limit")
+
+	if limit == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "fill query",
+		})
+
+	}
+
+	newLimit, err := strconv.Atoi(limit)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	res, err := h.gallery.FindAllGallery(newLimit)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	response := helpers.ResponseApi("success retrieve all data", res)
+
+	return c.Status(fiber.StatusOK).JSON(response)
 }
