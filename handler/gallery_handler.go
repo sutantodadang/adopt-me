@@ -251,3 +251,121 @@ func (h *GalleryHandler) GetAllGalleryHandler(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response)
 }
+
+func (h *GalleryHandler) UpdateGalleryHandler(c *fiber.Ctx) error {
+	cat_id := c.Query("cat_id")
+
+	if cat_id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	cat, err := h.gallery.FindGalleryByCatId(cat_id)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	for _, v := range cat.Images {
+		http.Get(v.Delete_url)
+	}
+
+	form, err := c.MultipartForm()
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	fileImage := form.File["images"]
+
+	var imageGallery []models.Image
+
+	key := url.QueryEscape(h.key_image)
+
+	fullUrl := fmt.Sprintf("%s%s", h.url, key)
+
+	for _, v := range fileImage {
+
+		file, err := v.Open()
+		if err != nil {
+			return err
+		}
+
+		buf := bytes.NewBuffer(nil)
+
+		writer := multipart.NewWriter(buf)
+
+		part, err := writer.CreateFormFile("image", v.Filename)
+
+		if err != nil {
+			return err
+		}
+
+		byt, err := ioutil.ReadAll(file)
+
+		if err != nil {
+			return err
+		}
+
+		part.Write(byt)
+		writer.Close()
+
+		req, err := http.NewRequest("POST", fullUrl, buf)
+
+		if err != nil {
+			return err
+		}
+
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+
+		client := &http.Client{}
+
+		res, err := client.Do(req)
+
+		if err != nil {
+			return err
+		}
+
+		var jsonResponse models.ResponseGallery
+
+		err = json.NewDecoder(res.Body).Decode(&jsonResponse)
+
+		if err != nil {
+			return err
+		}
+
+		catImage := new(models.Image)
+
+		catImage.Id = jsonResponse.Data.Id
+		catImage.Filename = jsonResponse.Data.Image.Filename
+		catImage.Image_url = jsonResponse.Data.Image.Url
+		catImage.Display_url = jsonResponse.Data.Display_url
+		catImage.Delete_url = jsonResponse.Data.Delete_url
+		catImage.Extension = jsonResponse.Data.Image.Extension
+		catImage.Mime = jsonResponse.Data.Image.Mime
+		catImage.Thumb = jsonResponse.Data.Thumb.Url
+
+		defer res.Body.Close()
+
+		imageGallery = append(imageGallery, *catImage)
+	}
+
+	cat.Images = imageGallery
+
+	result, err := h.gallery.UpdateGallery(cat_id, cat)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": result + " data was updated",
+	})
+}

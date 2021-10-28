@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/sutantodadang/adopt-me/v1/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,6 +15,7 @@ type ServiceGalery interface {
 	FindGalleryByUserId(id string, limit int) ([]models.Gallery, error)
 	FindGalleryByCatId(id string) (models.Gallery, error)
 	FindAllGallery(limit int) ([]models.Gallery, error)
+	UpdateGallery(cat string, gallery models.Gallery) (string, error)
 }
 
 type serviceGalery struct {
@@ -99,4 +101,22 @@ func (s *serviceGalery) FindAllGallery(limit int) ([]models.Gallery, error) {
 
 	return result, nil
 
+}
+
+func (s *serviceGalery) UpdateGallery(cat string, gallery models.Gallery) (string, error) {
+	db := s.db.Database("adopt-me-api").Collection("gallery")
+
+	res, err := db.UpdateOne(context.Background(), bson.M{"cat_id": cat}, bson.M{"$set": gallery})
+
+	if err != nil {
+		return "", err
+	}
+
+	result := strconv.Itoa(int(res.MatchedCount))
+
+	if result == "" {
+		return "", nil
+	}
+
+	return result, nil
 }
