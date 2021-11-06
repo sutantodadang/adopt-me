@@ -42,7 +42,7 @@ func (s *serviceUser) LoginUser(email string) (models.User, error) {
 	err := dataBase.FindOne(context.Background(), bson.M{"email": email}).Decode(&result)
 
 	if err != nil {
-		return result, mongo.ErrNoDocuments
+		return result, err
 	}
 
 	return result, nil

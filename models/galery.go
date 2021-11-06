@@ -11,13 +11,13 @@ type Gallery struct {
 
 type Image struct {
 	Id          string `json:"id,omitempty" bson:"id"`
-	Filename    string `json:"filename,omitempty" bson:"filename"`
-	Image_url   string `json:"image_url,omitempty" bson:"image_url"`
-	Display_url string `json:"display_url,omitempty" bson:"display_url"`
-	Thumb       string `json:"thumb,omitempty" bson:"thumb"`
-	Mime        string `json:"mime,omitempty" bson:"mime"`
-	Extension   string `json:"extension,omitempty" bson:"extension"`
-	Delete_url  string `json:"delete_url,omitempty" bson:"delete_url"`
+	Filename    string `json:"filename" bson:"filename"`
+	Image_url   string `json:"image_url" bson:"image_url"`
+	Display_url string `json:"display_url" bson:"display_url"`
+	Thumb       string `json:"thumb" bson:"thumb"`
+	Mime        string `json:"mime" bson:"mime"`
+	Extension   string `json:"extension" bson:"extension"`
+	Delete_url  string `json:"delete_url" bson:"delete_url"`
 }
 
 type ResponseGallery struct {

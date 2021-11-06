@@ -16,6 +16,7 @@ type ServiceGalery interface {
 	FindGalleryByCatId(id string) (models.Gallery, error)
 	FindAllGallery(limit int) ([]models.Gallery, error)
 	UpdateGallery(cat string, gallery models.Gallery) (string, error)
+	DeleteGallery(cat string) (string, error)
 }
 
 type serviceGalery struct {
@@ -119,4 +120,18 @@ func (s *serviceGalery) UpdateGallery(cat string, gallery models.Gallery) (strin
 	}
 
 	return result, nil
+}
+
+func (s *serviceGalery) DeleteGallery(cat string) (string, error) {
+	db := s.db.Database("adopt-me-api").Collection("gallery")
+
+	res, err := db.DeleteOne(context.Background(), bson.M{"cat_id": cat})
+
+	if err != nil {
+		return "", err
+	}
+
+	str := strconv.Itoa(int(res.DeletedCount))
+
+	return str, nil
 }

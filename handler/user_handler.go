@@ -30,6 +30,14 @@ func (h *UserHandler) CreateUserHandler(c *fiber.Ctx) error {
 
 	}
 
+	res, _ := h.userService.LoginUser(user.Email)
+
+	if res.Email != "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "user already exist",
+		})
+	}
+
 	// validasi input
 	if err := utils.ValidateInput(user); err != nil {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{"message": err.Error()})
@@ -46,8 +54,7 @@ func (h *UserHandler) CreateUserHandler(c *fiber.Ctx) error {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	err = h.userService.CreateUser(*user)
-	if err != nil {
+	if err := h.userService.CreateUser(*user); err != nil {
 		return c.Status(fiber.ErrBadRequest.Code).JSON(fiber.Map{"message": err.Error()})
 	}
 

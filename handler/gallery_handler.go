@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -31,7 +31,7 @@ func NewGalleryHandler(gallery services.ServiceGalery, catService services.Servi
 }
 
 func (h *GalleryHandler) CreateGalleryHandler(c *fiber.Ctx) error {
-	id := c.Query("id")
+	id := c.Query("cat_id")
 
 	if id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -76,7 +76,10 @@ func (h *GalleryHandler) CreateGalleryHandler(c *fiber.Ctx) error {
 	fileHeader := form.File["images"]
 
 	var imageGallery []models.Image
+
 	var gallery models.Gallery
+
+	client := resty.New()
 
 	key := url.QueryEscape(h.key_image)
 
@@ -89,48 +92,27 @@ func (h *GalleryHandler) CreateGalleryHandler(c *fiber.Ctx) error {
 			return err
 		}
 
-		buf := bytes.NewBuffer(nil)
-
-		writer := multipart.NewWriter(buf)
-
-		part, err := writer.CreateFormFile("image", v.Filename)
-
-		if err != nil {
-			return err
-		}
-
 		byt, err := ioutil.ReadAll(file)
 
 		if err != nil {
 			return err
 		}
 
-		part.Write(byt)
-		writer.Close()
-
-		req, err := http.NewRequest("POST", fullUrl, buf)
+		resp, err := client.R().SetFileReader("image", v.Filename, bytes.NewBuffer(byt)).Post(fullUrl)
 
 		if err != nil {
 			return err
 		}
 
-		req.Header.Set("Content-Type", writer.FormDataContentType())
+		jsonResponse := new(models.ResponseGallery)
 
-		client := &http.Client{}
-
-		res, err := client.Do(req)
+		err = json.Unmarshal(resp.Body(), &jsonResponse)
 
 		if err != nil {
 			return err
 		}
 
-		var jsonResponse models.ResponseGallery
-
-		err = json.NewDecoder(res.Body).Decode(&jsonResponse)
-
-		if err != nil {
-			return err
-		}
+		defer resp.RawBody().Close()
 
 		catImage := new(models.Image)
 
@@ -143,13 +125,13 @@ func (h *GalleryHandler) CreateGalleryHandler(c *fiber.Ctx) error {
 		catImage.Mime = jsonResponse.Data.Image.Mime
 		catImage.Thumb = jsonResponse.Data.Thumb.Url
 
-		defer res.Body.Close()
-
 		imageGallery = append(imageGallery, *catImage)
 	}
 
 	gallery.Images = imageGallery
+
 	gallery.Cat_Id = modCat.Id.Hex()
+
 	gallery.User_id = user_id
 
 	err = h.gallery.CreateGallery(gallery)
@@ -283,6 +265,8 @@ func (h *GalleryHandler) UpdateGalleryHandler(c *fiber.Ctx) error {
 
 	fileImage := form.File["images"]
 
+	client := resty.New()
+
 	var imageGallery []models.Image
 
 	key := url.QueryEscape(h.key_image)
@@ -296,48 +280,27 @@ func (h *GalleryHandler) UpdateGalleryHandler(c *fiber.Ctx) error {
 			return err
 		}
 
-		buf := bytes.NewBuffer(nil)
-
-		writer := multipart.NewWriter(buf)
-
-		part, err := writer.CreateFormFile("image", v.Filename)
-
-		if err != nil {
-			return err
-		}
-
 		byt, err := ioutil.ReadAll(file)
 
 		if err != nil {
 			return err
 		}
 
-		part.Write(byt)
-		writer.Close()
-
-		req, err := http.NewRequest("POST", fullUrl, buf)
+		resp, err := client.R().SetFileReader("image", v.Filename, bytes.NewBuffer(byt)).Post(fullUrl)
 
 		if err != nil {
 			return err
 		}
 
-		req.Header.Set("Content-Type", writer.FormDataContentType())
+		jsonResponse := new(models.ResponseGallery)
 
-		client := &http.Client{}
-
-		res, err := client.Do(req)
+		err = json.Unmarshal(resp.Body(), &jsonResponse)
 
 		if err != nil {
 			return err
 		}
 
-		var jsonResponse models.ResponseGallery
-
-		err = json.NewDecoder(res.Body).Decode(&jsonResponse)
-
-		if err != nil {
-			return err
-		}
+		defer resp.RawBody().Close()
 
 		catImage := new(models.Image)
 
@@ -349,8 +312,6 @@ func (h *GalleryHandler) UpdateGalleryHandler(c *fiber.Ctx) error {
 		catImage.Extension = jsonResponse.Data.Image.Extension
 		catImage.Mime = jsonResponse.Data.Image.Mime
 		catImage.Thumb = jsonResponse.Data.Thumb.Url
-
-		defer res.Body.Close()
 
 		imageGallery = append(imageGallery, *catImage)
 	}
@@ -367,5 +328,43 @@ func (h *GalleryHandler) UpdateGalleryHandler(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": result + " data was updated",
+	})
+}
+
+func (h *GalleryHandler) DeleteGalleryHandler(c *fiber.Ctx) error {
+	id := c.Query("cat_id")
+
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "fill query",
+		})
+	}
+
+	client := &fiber.Client{}
+
+	cat, err := h.gallery.FindGalleryByCatId(id)
+
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	for _, v := range cat.Images {
+		agent := client.Get(v.Delete_url)
+		agent.String()
+
+	}
+
+	res, err := h.gallery.DeleteGallery(id)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": res + " data deleted",
 	})
 }

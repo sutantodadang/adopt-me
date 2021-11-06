@@ -21,6 +21,7 @@ func (r *galleryRoute) GalleryRouter(app *fiber.App) {
 	route.Post("/", r.authMiddle.AuthMiddle(), r.galleryHandler.CreateGalleryHandler)
 	route.Get("/", r.galleryHandler.GetAllGalleryHandler)
 	route.Put("/", r.authMiddle.AuthMiddle(), r.galleryHandler.UpdateGalleryHandler)
+	route.Delete("/", r.authMiddle.AuthMiddle(), r.galleryHandler.DeleteGalleryHandler)
 
 	route.Get("/user", r.authMiddle.AuthMiddle(), r.galleryHandler.GetGalleryByUserHandler)
 	route.Get("/cat", r.authMiddle.AuthMiddle(), r.galleryHandler.GetGalleryByCatHandler)
